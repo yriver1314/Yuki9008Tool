@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 //  update channel
 // ---------------------------------------------------------------------------
-static constexpr const wchar_t* kAppVersion = L"1.0.3";
+static constexpr const wchar_t* kAppVersion = L"1.0.4";
 static constexpr const wchar_t* kRepoOwner = L"yriver1314";
 static constexpr const wchar_t* kRepoName = L"Yuki9008Tool";
 
@@ -325,6 +325,15 @@ void AppState::Build()
 
 void AppState::BuildControls()
 {
+    wchar_t exePath[MAX_PATH] = {};
+    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+    std::wstring exeDir = exePath;
+    size_t slash = exeDir.find_last_of(L"\\/");
+    if (slash != std::wstring::npos) {
+        exeDir.resize(slash);
+        m_driverDir = exeDir + L"\\Driver";
+    }
+
     m_heroScan = m_ui.button(L"扫描 9008 设备", [this] { StartScan(); });
     m_heroScan.primary(true).accent((int)m_accent).radius(10).font(12).bold(true);
     m_dash.push_back(m_heroScan);
@@ -463,6 +472,12 @@ void AppState::BuildControls()
     m_setQfil.font(11);
     m_set.push_back(m_setQfil);
 
+    m_setDriver = m_ui.button(L"打开 Driver · 安装 9008 驱动与 VC++ 运行库",
+                              [this] { OpenDriverFolder(); });
+    StyleSecondary(m_setDriver);
+    m_setDriver.font(11);
+    m_set.push_back(m_setDriver);
+
     m_setLogs = m_ui.button(L"打开运行日志", [this] { SetPage(3); });
     StyleGhost(m_setLogs);
     m_set.push_back(m_setLogs);
@@ -566,6 +581,7 @@ void AppState::Layout()
     m_setReboot.rect(l.L + 26, 90 + 270, 330, 28);
     m_setReset.rect(l.L + 26, 90 + 312, 138, 36);
     m_setQfil.rect(l.L + 176, 90 + 312, 150, 36);
+    m_setDriver.rect(l.L + 26, 90 + 354, 424, 32);
     int rightCardX = l.L + 506;
     m_setLogs.rect(rightCardX + 26, 90 + 340, 138, 36);
     m_setUpdate.rect(rightCardX + 176, 90 + 340, 150, 36);
@@ -584,6 +600,7 @@ void AppState::SetPage(int page)
     for (Widget& w : m_log) w.visible(m_page == 3);
     for (Widget& w : m_set) w.visible(m_page == 4);
     m_setQfil.visible(m_page == 4 && !m_engineQfil.empty());
+    m_setDriver.visible(m_page == 4 && !m_driverDir.empty());
     m_pageFade = 1.f;
     if (m_page == 2) RefreshPartitionTable();
     if (m_page == 3) SyncLog();
@@ -600,7 +617,7 @@ void AppState::Begin()
     m_autoStart = std::getenv("YUKI9008_AUTO_START") != nullptr;
     if (const char* fw = std::getenv("YUKI9008_FIRMWARE"))
         LoadFirmwareDir(FromUtf8(fw));
-    Log(L"Yuki9008工具 内核 v1.0.3 已启动", LogLevel::Ok);
+    Log(L"Yuki9008工具 内核 v1.0.4 已启动", LogLevel::Ok);
     Log(L"加载安全策略 · 校验 / 备份 / 防误擦", LogLevel::Info);
     if (m_engineReady)
         Log(L"写入引擎已就绪 · " + m_engineDir, LogLevel::Ok);
@@ -608,6 +625,13 @@ void AppState::Begin()
         Log(L"已找到 QFIL GUI · " + m_engineQfil + L"（命令行 fh_loader 缺失）", LogLevel::Warn);
     else
         Log(L"未检测到 QFIL 写入引擎（fh_loader / QSaharaServer）", LogLevel::Warn);
+
+    std::wstring setupHint = DriverSetupHint();
+    if (!setupHint.empty()) {
+        Log(setupHint + L" · " + m_driverDir, LogLevel::Warn);
+        m_app.toast(setupHint.c_str(), 8000);
+    }
+
     UpdateStartButton();
     SetStatus(L"正在扫描 EDL 总线", L"查找 Qualcomm QDLoader 9008", m_accent);
     StartScan();
@@ -812,6 +836,59 @@ void AppState::LaunchQfil()
     }
     Log(L"已启动 QFIL GUI · " + m_engineQfil, LogLevel::Ok);
     m_app.toast(L"已打开 QFIL · 可手动刷写", 3200);
+}
+
+void AppState::OpenDriverFolder()
+{
+    if (m_driverDir.empty() || GetFileAttributesW(m_driverDir.c_str()) == INVALID_FILE_ATTRIBUTES) {
+        m_app.toast(L"Driver 文件夹不存在", 3200);
+        return;
+    }
+    ShellExecuteW(m_app.hwnd(), L"open", m_driverDir.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+    Log(L"打开驱动与运行库目录 · " + m_driverDir, LogLevel::Info);
+    m_app.toast(L"请安装 9008 驱动和 VC++ 2010 运行库", 4200);
+}
+
+std::wstring AppState::DriverSetupHint() const
+{
+    if (m_driverDir.empty()) return L"";
+
+    auto fileExists = [](const std::wstring& p) {
+        DWORD a = GetFileAttributesW(p.c_str());
+        return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+    };
+
+    wchar_t sys[MAX_PATH] = {};
+    GetSystemDirectoryW(sys, MAX_PATH);
+    std::wstring sysDir = sys;
+
+    std::wstring wowDir;
+    wchar_t wow[MAX_PATH] = {};
+    if (GetSystemWow64DirectoryW(wow, MAX_PATH) > 0)
+        wowDir = wow;
+
+    bool rt64 = fileExists(sysDir + L"\\msvcp100.dll") &&
+                fileExists(sysDir + L"\\msvcr100.dll");
+    bool rt86 = false;
+    if (!wowDir.empty())
+        rt86 = fileExists(wowDir + L"\\msvcp100.dll") &&
+               fileExists(wowDir + L"\\msvcr100.dll");
+    else
+        rt86 = rt64;
+
+    bool drv = fileExists(sysDir + L"\\drivers\\qcusbser.sys") ||
+               fileExists(sysDir + L"\\drivers\\qcusb.sys");
+
+    bool needDriver = !drv;
+    bool needRuntime = !(rt86 && rt64);
+
+    if (needDriver && needRuntime)
+        return L"首次使用：安装 Driver 中的 9008 驱动与 VC++ 2010 运行库";
+    if (needDriver)
+        return L"首次使用：安装 Driver 中的 Qualcomm 9008 驱动";
+    if (needRuntime)
+        return L"首次使用：安装 Driver 中的 VC++ 2010 运行库";
+    return L"";
 }
 
 void AppState::BrowseFirmware()

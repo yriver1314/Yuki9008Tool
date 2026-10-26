@@ -5,7 +5,7 @@
 >
 > 作者：**yriver1314**  
 > GitHub：<https://github.com/yriver1314/Yuki9008Tool>  
-> 当前版本：**1.0.3**
+> 当前版本：**1.0.4**
 
 ![Yuki9008工具 刷写中心](preview.png)
 
@@ -69,10 +69,32 @@ Yuki9008工具 把高通 9008（QDLoader / EDL）刷机流程做成一个完整�
 ### 6. GitHub 更新通道
 
 - 设置页直接检查 GitHub Releases
-- 读取 latest release tag，与当前 `1.0.3` 比较
+- 读取 latest release tag，与当前 `1.0.4` 比较
 - 显示“已是最新”“发现新版本”“检查失败”
 - 有新版时打开发行包下载地址
 - 仓库：<https://github.com/yriver1314/Yuki9008Tool>
+
+## 首次使用：安装驱动和运行库
+
+发行包 `Driver\` 已包含完整安装程序：
+
+```text
+vcredist_x86.exe                           VC++ 2010 x86 运行库（QDmssLoader 必需）
+vcredist_x64.exe                           VC++ 2010 x64 运行库
+Qualcomm USB Driver v1.0.10065.1.exe       Qualcomm 9008 驱动
+QDLoader HS-USB Driver_64bit_Setup.exe     QDLoader 9008 驱动（64 位）
+QDLoader HS-USB Driver_32bit_Setup.exe     QDLoader 9008 驱动（32 位）
+```
+
+建议按以下顺序安装：
+
+1. 运行 `vcredist_x86.exe` 和 `vcredist_x64.exe`
+2. 运行 `Qualcomm USB Driver v1.0.10065.1.exe`
+3. 如仍无法识别，再安装对应系统的 `QDLoader HS-USB Driver_*_Setup.exe`
+4. 重启设备并重新进入 9008，确认设备管理器出现 `QDLoader 9008 (COMx)`
+
+工具启动时会检查运行库和 9008 驱动；缺失时会弹出首次使用提示。
+设置页也提供 **打开 Driver · 安装 9008 驱动与 VC++ 运行库** 按钮。
 
 ## 使用流程
 
@@ -98,7 +120,7 @@ libwinpthread-1.dll
 README.md
 preview.png
 bin\                 # QFIL 2.0.3.5 + QSaharaServer + fh_loader
-Driver\              # Qualcomm QDLoader USB 驱动安装包
+Driver\              # VC++ 2010 运行库 + Qualcomm 9008 驱动
 ```
 
 `bin` 和 `Driver` 会随 `build.bat` 一起复制到 `dist\`，并打包进 Release。
@@ -127,12 +149,16 @@ Credits.txt / *.url
 | `QFIL.exe` | **可用**：QFIL 2.0.3.5 GUI 能启动并进入加载流程 |
 | `QSaharaServer.exe` | **可用**：能启动并打印完整帮助，退出码 0；支持 `-p \\.\COMn` 和 `-u <port>` |
 | `fh_loader.exe` | **可用**：版本 `17.04.27.14.27`，`--port` / `--sendxml` / `--search_path` / `--memoryname` 等参数完整，帮助退出码 0 |
-| `QDmssLoader.exe` | **不可用**：启动返回 `0xC0000135`，缺少 32 位 `MSVCP100.dll` / `MSVCR100.dll`；不影响 QFIL GUI 和 fh_loader |
+| `QDmssLoader.exe` | **安装 VC++ 2010 x86 后可用**：已能打印完整参数帮助 |
 | `Driver\*Setup.exe` | **签名有效**：Qualcomm 官方签名，未在本机安装测试 |
+| `Driver\vcredist_*.exe` | **签名有效**：Microsoft 官方 VC++ 2010 10.0.40219 运行库 |
 
 结论：**QFIL 2.0.3.5 完整 GUI + `fh_loader.exe` 已加入 bin**，工具现在可以进入
 `QFIL READY` 状态，使用 `QSaharaServer + fh_loader` 一键写入；设置页仍保留
 “打开 QFIL”作为手动刷写入口。当前环境没有 9008 设备，硬件写入未做端到端测试。
+
+> 首次使用请先安装 `Driver\vcredist_x86.exe`、`vcredist_x64.exe` 和 Qualcomm
+> 9008 驱动；否则 QDmssLoader 会因缺少 VC++ 2010 运行库而无法启动。
 
 ## 写入引擎检测顺序
 

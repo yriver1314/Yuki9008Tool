@@ -92,7 +92,7 @@ void AppState::PaintChrome(Gdiplus::Graphics& g)
 
     Txt(g, L"Yuki9008", { 74, 19, 138, 22 }, m_fonts.h2.get(), col::ink, 255, 0);
     Txt(g, L"9008 TOOL  ·  FLASH STUDIO", { 75, 41, 150, 12 }, m_fonts.tiny.get(), 0x91A4BE, 255, 0);
-    Txt(g, L"v1.0.3", { 170, 24, 50, 12 }, m_fonts.tiny.get(), 0x51637C, 255, 2);
+    Txt(g, L"v1.0.4", { 170, 24, 50, 12 }, m_fonts.tiny.get(), 0x51637C, 255, 2);
 
     Hairline(g, 26, 76, 206, 76, 0x16243A, 220);
     Txt(g, L"工作区", { 28, 94, 90, 14 }, m_fonts.tiny.get(), 0x5C718F, 255, 0);

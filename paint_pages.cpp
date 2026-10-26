@@ -277,7 +277,7 @@ void AppState::PaintSettingsPage(Gdiplus::Graphics& g, bool bg)
     g.DrawPath(&vedge, &vp);
     Txt(g, L"Yuki9008工具", { ver.x + 16, ver.y + 10, 200, 20 }, m_fonts.bodyBold.get(),
         0xEDF5FF, 255, 0);
-    Txt(g, L"v1.0.3  ·  BUILD 2026.10  ·  BY YRIVER1314", { ver.x + 16, ver.y + 31, 300, 16 },
+    Txt(g, L"v1.0.4  ·  BUILD 2026.10  ·  BY YRIVER1314", { ver.x + 16, ver.y + 31, 300, 16 },
         m_fonts.monoS.get(), 0x8EA6C7, 255, 0);
     Txt(g, L"YRGui 4.0  ·  MIT License", { ver.x + 16, ver.y + 49, 260, 16 },
         m_fonts.tiny.get(), 0x607793, 255, 0);
