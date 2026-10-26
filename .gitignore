@@ -1,0 +1,19 @@
+# Local build output
+/Yuki9008Tool.exe
+/dist/
+*.exe
+*.dll
+*.res
+*.log
+*.zip
+
+# Bundled third-party tools / drivers (not part of the source repo)
+/bin/
+/Driver/
+/tools/
+
+# Test artifacts
+/update_test.exe
+/update_*.png
+/real_*.png
+/capture*.ps1
