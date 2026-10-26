@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 //  update channel
 // ---------------------------------------------------------------------------
-static constexpr const wchar_t* kAppVersion = L"1.0.1";
+static constexpr const wchar_t* kAppVersion = L"1.0.2";
 static constexpr const wchar_t* kRepoOwner = L"yriver1314";
 static constexpr const wchar_t* kRepoName = L"Yuki9008Tool";
 
@@ -458,6 +458,11 @@ void AppState::BuildControls()
     StyleSecondary(m_setReset);
     m_set.push_back(m_setReset);
 
+    m_setQfil = m_ui.button(L"打开 QFIL", [this] { LaunchQfil(); });
+    StyleSecondary(m_setQfil);
+    m_setQfil.font(11);
+    m_set.push_back(m_setQfil);
+
     m_setLogs = m_ui.button(L"打开运行日志", [this] { SetPage(3); });
     StyleGhost(m_setLogs);
     m_set.push_back(m_setLogs);
@@ -560,6 +565,7 @@ void AppState::Layout()
     m_setVerify.rect(l.L + 26, 90 + 234, 330, 28);
     m_setReboot.rect(l.L + 26, 90 + 270, 330, 28);
     m_setReset.rect(l.L + 26, 90 + 312, 138, 36);
+    m_setQfil.rect(l.L + 176, 90 + 312, 150, 36);
     int rightCardX = l.L + 506;
     m_setLogs.rect(rightCardX + 26, 90 + 340, 138, 36);
     m_setUpdate.rect(rightCardX + 176, 90 + 340, 150, 36);
@@ -577,6 +583,7 @@ void AppState::SetPage(int page)
     for (Widget& w : m_part) w.visible(m_page == 2);
     for (Widget& w : m_log) w.visible(m_page == 3);
     for (Widget& w : m_set) w.visible(m_page == 4);
+    m_setQfil.visible(m_page == 4 && !m_engineQfil.empty());
     m_pageFade = 1.f;
     if (m_page == 2) RefreshPartitionTable();
     if (m_page == 3) SyncLog();
@@ -593,10 +600,12 @@ void AppState::Begin()
     m_autoStart = std::getenv("YUKI9008_AUTO_START") != nullptr;
     if (const char* fw = std::getenv("YUKI9008_FIRMWARE"))
         LoadFirmwareDir(FromUtf8(fw));
-    Log(L"Yuki9008工具 内核 v1.0.1 已启动", LogLevel::Ok);
+    Log(L"Yuki9008工具 内核 v1.0.2 已启动", LogLevel::Ok);
     Log(L"加载安全策略 · 校验 / 备份 / 防误擦", LogLevel::Info);
     if (m_engineReady)
         Log(L"写入引擎已就绪 · " + m_engineDir, LogLevel::Ok);
+    else if (!m_engineQfil.empty())
+        Log(L"已找到 QFIL GUI · " + m_engineQfil + L"（命令行 fh_loader 缺失）", LogLevel::Warn);
     else
         Log(L"未检测到 QFIL 写入引擎（fh_loader / QSaharaServer）", LogLevel::Warn);
     UpdateStartButton();
@@ -705,6 +714,7 @@ void AppState::DetectEngine()
     m_engineDir.clear();
     m_engineSahara.clear();
     m_engineFhLoader.clear();
+    m_engineQfil.clear();
     m_engineReady = false;
     m_engineNote.clear();
 
@@ -760,8 +770,10 @@ void AppState::DetectEngine()
         while (!d.empty() && (d.back() == L'\\' || d.back() == L'/')) d.pop_back();
         std::wstring sahara = d + L"\\QSaharaServer.exe";
         std::wstring fh = d + L"\\fh_loader.exe";
+        std::wstring qfil = d + L"\\QFIL.exe";
         if (m_engineSahara.empty() && fileExists(sahara)) m_engineSahara = sahara;
         if (m_engineFhLoader.empty() && fileExists(fh)) m_engineFhLoader = fh;
+        if (m_engineQfil.empty() && fileExists(qfil)) m_engineQfil = qfil;
         if (!m_engineSahara.empty() && !m_engineFhLoader.empty()) {
             m_engineDir = d;
             m_engineReady = true;
@@ -770,7 +782,9 @@ void AppState::DetectEngine()
         }
     }
 
-    if (!m_engineSahara.empty() && m_engineFhLoader.empty())
+    if (!m_engineQfil.empty() && m_engineFhLoader.empty())
+        m_engineNote = L"QFIL GUI 可用；命令行 fh_loader 缺失";
+    else if (!m_engineSahara.empty() && m_engineFhLoader.empty())
         m_engineNote = L"已找到 QSaharaServer，缺少 fh_loader.exe";
     else if (m_engineSahara.empty() && !m_engineFhLoader.empty())
         m_engineNote = L"已找到 fh_loader，缺少 QSaharaServer.exe";
@@ -778,6 +792,26 @@ void AppState::DetectEngine()
         m_engineNote = L"写入引擎不完整：需要 QSaharaServer.exe 与 fh_loader.exe";
     else
         m_engineNote = L"未检测到 QFIL 写入引擎";
+}
+
+void AppState::LaunchQfil()
+{
+    if (m_engineQfil.empty()) {
+        m_app.toast(L"未找到 QFIL.exe，请把完整 QFIL 放入 bin", 3600);
+        return;
+    }
+    size_t slash = m_engineQfil.find_last_of(L"\\/");
+    std::wstring dir = slash == std::wstring::npos ? std::wstring()
+                                                    : m_engineQfil.substr(0, slash);
+    HINSTANCE r = ShellExecuteW(m_app.hwnd(), L"open", m_engineQfil.c_str(), nullptr,
+                                dir.empty() ? nullptr : dir.c_str(), SW_SHOWNORMAL);
+    if ((INT_PTR)r <= 32) {
+        Log(L"启动 QFIL 失败 · " + m_engineQfil, LogLevel::Error);
+        m_app.toast(L"QFIL 启动失败", 3600);
+        return;
+    }
+    Log(L"已启动 QFIL GUI · " + m_engineQfil, LogLevel::Ok);
+    m_app.toast(L"已打开 QFIL · 可手动刷写", 3200);
 }
 
 void AppState::BrowseFirmware()

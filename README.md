@@ -5,7 +5,7 @@
 >
 > 作者：**yriver1314**  
 > GitHub：<https://github.com/yriver1314/Yuki9008Tool>  
-> 当前版本：**1.0.1**
+> 当前版本：**1.0.2**
 
 ![Yuki9008工具 刷写中心](preview.png)
 
@@ -47,6 +47,7 @@ Yuki9008工具 把高通 9008（QDLoader / EDL）刷机流程做成一个完整�
 - 捕获 stdout / stderr 到运行日志
 - 失败时显示退出码和错误日志，支持手动停止并终止子进程
 - UFS / eMMC 根据编程器和固件路径自动推断
+- 完整 QFIL 2.0.3.5 GUI 随包提供；设置页可直接“打开 QFIL”手动刷写
 
 ### 4. 分区浏览与日志
 
@@ -68,7 +69,7 @@ Yuki9008工具 把高通 9008（QDLoader / EDL）刷机流程做成一个完整�
 ### 6. GitHub 更新通道
 
 - 设置页直接检查 GitHub Releases
-- 读取 latest release tag，与当前 `1.0.1` 比较
+- 读取 latest release tag，与当前 `1.0.2` 比较
 - 显示“已是最新”“发现新版本”“检查失败”
 - 有新版时打开发行包下载地址
 - 仓库：<https://github.com/yriver1314/Yuki9008Tool>
@@ -83,6 +84,9 @@ Yuki9008工具 把高通 9008（QDLoader / EDL）刷机流程做成一个完整�
 6. 点击“开始刷写”，保持 USB 连接直到显示完成
 7. 完成后手动重启设备；重新进入 9008 后可再次刷写
 
+如果当前只有 QFIL GUI、没有 `fh_loader.exe`，工具会显示 `QFIL GUI READY`。
+此时进入设置页点击 **打开 QFIL**，用 QFIL 2.0.3.5 图形界面手动刷写。
+
 ## 发行包内容
 
 GitHub Release 的 Windows 包包含：
@@ -93,7 +97,7 @@ logo.ico
 libwinpthread-1.dll
 README.md
 preview.png
-bin\                 # QFIL 命令行组件
+bin\                 # QFIL 2.0.3.5 完整 GUI + 命令行组件
 Driver\              # Qualcomm QDLoader USB 驱动安装包
 ```
 
@@ -105,27 +109,29 @@ Driver\              # Qualcomm QDLoader USB 驱动安装包
 当前 `bin` 目录包含：
 
 ```text
+QFIL.exe                 # QFIL 2.0.3.5 图形界面
 QSaharaServer.exe
 QDmssLoader.exe
 QC.QMSLPhone.dll
 QMSL_MSVC10R.dll
 QualCtrl.dll
 SwDownloadDLL.dll
+Credits.txt / *.url
 ```
 
 实测结果：
 
 | 组件 | 结果 |
 | --- | --- |
+| `QFIL.exe` | **可用**：QFIL 2.0.3.5 GUI 能启动并进入加载流程 |
 | `QSaharaServer.exe` | **可用**：能启动并打印完整帮助，退出码 0；支持 `-p \\.\COMn` 和 `-u <port>` |
-| `fh_loader.exe` | **缺失**：当前 bin 中没有，无法完成分区写入 |
+| `fh_loader.exe` | **缺失**：QFIL 2.0.3.5 包本身不带这个独立 CLI，无法用本工具一键写入 |
 | `QDmssLoader.exe` | **不可用**：启动返回 `0xC0000135`，缺少 32 位 `MSVCP100.dll` / `MSVCR100.dll` |
 | `Driver\*Setup.exe` | **签名有效**：Qualcomm 官方签名，未在本机安装测试 |
 
-结论：**当前 bin 不是完整的 QFIL 写入环境**。它可以完成 Sahara 编程器发送，
-但缺少 `fh_loader.exe`，所以本工具会显示 `ENGINE INCOMPLETE`，并禁用“开始刷写”。
-要完成真实写入，请把完整 QFIL / QPST 中的 `fh_loader.exe` 放进 `bin\`，或安装
-QFIL / QPST 后通过 `YUKI9008_ENGINE_DIR` 指向其 `bin` 目录。
+结论：**QFIL 2.0.3.5 完整 GUI 已加入 bin，可手动刷写**；本工具的“开始刷写”走
+`fh_loader.exe` 命令行，因此仍需要额外补一个 `fh_loader.exe`。有 QFIL GUI 时，
+工具会显示 `QFIL GUI READY`，并在设置页提供“打开 QFIL”按钮。
 
 ## 写入引擎检测顺序
 
@@ -141,7 +147,9 @@ QFIL / QPST 后通过 `YUKI9008_ENGINE_DIR` 指向其 `bin` 目录。
 8. `C:\Program Files\Qualcomm\QFIL`
 9. `PATH` 中的目录
 
-只有两个程序都找到，右侧才显示 `QFIL READY`。
+只有 `QSaharaServer.exe` 与 `fh_loader.exe` 都找到，右侧才显示 `QFIL READY`。
+如果找到 `QFIL.exe` 但缺少 `fh_loader.exe`，显示 `QFIL GUI READY`，可直接打开
+QFIL GUI 手动刷写。
 
 ## 快速开始
 

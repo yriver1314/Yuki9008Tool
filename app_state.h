@@ -52,7 +52,7 @@ private:
     Widget m_fwBrowse, m_fwTable, m_fwRemove, m_fwRescan;
     Widget m_partSearch, m_partFilter, m_partTable, m_partExport;
     Widget m_logArea, m_logExport, m_logClear, m_logAuto;
-    Widget m_setAnim, m_setVerify, m_setReboot, m_setReset, m_setLogs, m_setUpdate;
+    Widget m_setAnim, m_setVerify, m_setReboot, m_setReset, m_setQfil, m_setLogs, m_setUpdate;
 
     FirmwareInfo m_fw;
     DeviceInfo m_dev;
@@ -108,6 +108,7 @@ private:
     std::wstring m_engineDir;
     std::wstring m_engineSahara;
     std::wstring m_engineFhLoader;
+    std::wstring m_engineQfil;
     std::wstring m_engineNote;
     bool m_engineReady = false;
     HANDLE m_proc = nullptr;
@@ -156,6 +157,7 @@ private:
     void FinishFlash();
     void FailFlash(const std::wstring& reason);
     void UpdateStartButton();
+    void LaunchQfil();
     bool LaunchPhase(int phase);
     void ReadProcessOutput();
     void CloseProcessHandles();

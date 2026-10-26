@@ -92,7 +92,7 @@ void AppState::PaintChrome(Gdiplus::Graphics& g)
 
     Txt(g, L"Yuki9008", { 74, 19, 138, 22 }, m_fonts.h2.get(), col::ink, 255, 0);
     Txt(g, L"9008 TOOL  ·  FLASH STUDIO", { 75, 41, 150, 12 }, m_fonts.tiny.get(), 0x91A4BE, 255, 0);
-    Txt(g, L"v1.0.1", { 170, 24, 50, 12 }, m_fonts.tiny.get(), 0x51637C, 255, 2);
+    Txt(g, L"v1.0.2", { 170, 24, 50, 12 }, m_fonts.tiny.get(), 0x51637C, 255, 2);
 
     Hairline(g, 26, 76, 206, 76, 0x16243A, 220);
     Txt(g, L"工作区", { 28, 94, 90, 14 }, m_fonts.tiny.get(), 0x5C718F, 255, 0);
@@ -207,8 +207,9 @@ void AppState::PaintChrome(Gdiplus::Graphics& g)
         Txt(g, scanning ? L"ENUMERATING" :
                 (live ? L"USB LINK ACTIVE"
                       : (m_engineReady ? L"ENGINE READY"
-                                       : (!m_engineSahara.empty() ? L"ENGINE INCOMPLETE"
-                                                                  : L"ENGINE NOT FOUND"))),
+                                       : (!m_engineQfil.empty() ? L"QFIL GUI READY"
+                                                                : (!m_engineSahara.empty() ? L"ENGINE INCOMPLETE"
+                                                                                           : L"ENGINE NOT FOUND")))),
             { r.x + 56, r.y + 94, 140, 13 }, m_fonts.monoS.get(),
             live ? 0x6FAF99 : (m_engineReady ? 0x6F8FB5 : 0x7D6C52), 255, 0);
     }
