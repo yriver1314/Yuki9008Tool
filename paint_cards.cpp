@@ -233,7 +233,9 @@ void AppState::PaintOptions(Gdiplus::Graphics& g)
         nc = col::red;
         nfg = 0xFFB0BC;
     } else if (!m_engineReady) {
-        note = L"未检测到 QFIL / fh_loader 写入引擎";
+        note = (!m_engineSahara.empty() && m_engineFhLoader.empty())
+                   ? L"缺少 fh_loader.exe · 无法写入"
+                   : L"未检测到 QFIL / fh_loader 写入引擎";
         nc = col::red;
         nfg = 0xF2A9B4;
     } else if (m_fw.valid && m_fw.programmer.empty()) {

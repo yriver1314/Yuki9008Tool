@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 //  update channel
 // ---------------------------------------------------------------------------
-static constexpr const wchar_t* kAppVersion = L"1.0.0";
+static constexpr const wchar_t* kAppVersion = L"1.0.1";
 static constexpr const wchar_t* kRepoOwner = L"yriver1314";
 static constexpr const wchar_t* kRepoName = L"Yuki9008Tool";
 
@@ -593,7 +593,7 @@ void AppState::Begin()
     m_autoStart = std::getenv("YUKI9008_AUTO_START") != nullptr;
     if (const char* fw = std::getenv("YUKI9008_FIRMWARE"))
         LoadFirmwareDir(FromUtf8(fw));
-    Log(L"Yuki9008工具 内核 v1.0.0 已启动", LogLevel::Ok);
+    Log(L"Yuki9008工具 内核 v1.0.1 已启动", LogLevel::Ok);
     Log(L"加载安全策略 · 校验 / 备份 / 防误擦", LogLevel::Info);
     if (m_engineReady)
         Log(L"写入引擎已就绪 · " + m_engineDir, LogLevel::Ok);
@@ -724,6 +724,8 @@ void AppState::DetectEngine()
     if (slash != std::wstring::npos) {
         exeDir.resize(slash);
         dirs.push_back(exeDir);
+        dirs.push_back(exeDir + L"\\bin");
+        dirs.push_back(exeDir + L"\\QFIL");
     }
 
     const wchar_t* common[] = {
@@ -768,7 +770,11 @@ void AppState::DetectEngine()
         }
     }
 
-    if (!m_engineSahara.empty() || !m_engineFhLoader.empty())
+    if (!m_engineSahara.empty() && m_engineFhLoader.empty())
+        m_engineNote = L"已找到 QSaharaServer，缺少 fh_loader.exe";
+    else if (m_engineSahara.empty() && !m_engineFhLoader.empty())
+        m_engineNote = L"已找到 fh_loader，缺少 QSaharaServer.exe";
+    else if (!m_engineSahara.empty() || !m_engineFhLoader.empty())
         m_engineNote = L"写入引擎不完整：需要 QSaharaServer.exe 与 fh_loader.exe";
     else
         m_engineNote = L"未检测到 QFIL 写入引擎";

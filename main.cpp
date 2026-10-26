@@ -1,6 +1,6 @@
 // ============================================================================
 //  Yuki9008工具 — Qualcomm Emergency Download Studio
-//  A visual EDL / 9008 flashing tool built on YRGui. Author: river.
+//  A visual EDL / 9008 flashing tool built on YRGui. Author: yriver1314.
 // ============================================================================
 #include "app_state.h"
 

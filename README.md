@@ -1,90 +1,166 @@
 # Yuki9008工具
 
-> 基于 **YRGui 4.0** 的高通 EDL（9008）刷机工具  
+> 高通 9008 / QDLoader EDL 可视化刷机工具  
 > Qualcomm Emergency Download Studio · Modern dark UI · Rich motion
 >
-> 作者：**river**  
-> GitHub：<https://github.com/yriver1314/Yuki9008Tool>
+> 作者：**yriver1314**  
+> GitHub：<https://github.com/yriver1314/Yuki9008Tool>  
+> 当前版本：**1.0.1**
 
 ![Yuki9008工具 刷写中心](preview.png)
 
-## 这是什么
+## 工具定位
 
-Yuki9008工具 是一个面向高通 9008（QDLoader / EDL）刷机流程的 Windows 桌面工具。
-界面包含设备枚举、固件结构解析、分区浏览、真实写入进度、运行日志与导出。
+Yuki9008工具 把高通 9008（QDLoader / EDL）刷机流程做成一个完整的 Windows
+桌面工作站：自动识别设备、解析固件包、浏览分区、调用真实 QFIL 命令行写入，
+并实时展示进度、速度、剩余时间和完整日志。
 
-**没有演示模式，也没有模拟写入。** 只有同时满足以下条件，写入按钮才会启用：
+它不是只做界面的壳：设备枚举、固件结构解析、分区表、SHA-256 指纹、CSV / 日志
+导出和 GitHub 更新检查都是真实功能。写入按钮只有在设备、固件和 QFIL 引擎全部
+就绪时才会启用，**没有演示模式，也不会生成假进度**。
 
-1. 检测到 `VID_05C6 / PID_9008` 设备，且设备暴露 `COMx` 端口；
-2. 已选择有效的固件目录，并找到 `rawprogram*.xml` 与 Firehose 编程器；
-3. 本机安装 QFIL / QPST 写入工具（`QSaharaServer.exe`、`fh_loader.exe`）。
+## 核心功能
 
-未就绪时界面会明确显示原因，不会生成假的写入进度。
+### 1. 设备检测与 EDL 状态
 
-## 功能
+- 通过 SetupAPI 枚举 `VID_05C6 / PID_9008`，兼容 `900E`
+- 自动读取设备名称、序列号和 `COMx` 端口
+- 区分“已连接”“EDL 写入中”“刷写完成”“离线”四种状态
+- `F5` 随时重新扫描，不需要重启工具
+- 没有 COM 端口时拒绝启动写入，避免对错误设备操作
 
-- **刷写中心**：EDL 状态、真实 `fh_loader` 进度、速度 / 已写入 / 剩余时间、分区流水线
-- **设备枚举**：SetupAPI 枚举 `VID_05C6 / PID_9008`（以及 900E），识别 COM 端口
-- **固件管理**：选择或拖入固件目录，解析 `rawprogram*.xml` / `patch*.xml` / `prog_firehose*`
-  - 读取分区标签、镜像文件名、文件大小
-  - 生成 SHA-256 包指纹
-  - 展示 Firehose 编程器、Mapping XML、分区统计
-- **真实写入**：调用 `QSaharaServer.exe` 发送编程器，再调用 `fh_loader.exe` 写入 rawprogram；存在 patch XML 时追加 patch 阶段
-- **分区浏览**：分区搜索、类型过滤、写入状态；支持导出 CSV
-- **运行日志**：完整捕获写入工具输出，自动滚动、清空、导出 UTF-8 文本
-- **设置**：四种强调色、动效开关、默认校验 / 重启策略、引擎与运行环境信息
-- **动效**：页面淡入、导航 hover 光效、EDL 环形轨道、呼吸状态点、扫描线、
-  数据脉冲、传输曲线、完成彩带、堆叠 Toast 与流光背景
-- **原生窗口**：无边框、自绘标题栏、窗口拖动 / 最大化 / Win11 贴靠、Per-Monitor V2 DPI
-- **品牌图标**：窗口图标、exe 资源图标、标题栏与侧栏 logo 全部读取 `logo.ico`
-- **拖拽**：把解压后的固件目录拖到窗口任意位置即可载入
+### 2. 固件包解析
 
-## 运行要求
+- 选择或拖入解压后的固件目录
+- 自动查找 `rawprogram*.xml` / `patch*.xml` / `prog_firehose*`
+- 解析分区标签、镜像文件名、文件大小、Sparse 标记
+- 计算整个固件包的 SHA-256 指纹
+- 识别 Firehose 编程器、Mapping XML、分区数量和总负载
+- 固件包为空、缺少 XML 或缺少编程器时给出明确提示
 
-写入依赖 Qualcomm 官方工具中的两个命令行程序：
+### 3. 真实 QFIL 写入后端
+
+- `QSaharaServer.exe` 发送 Firehose 编程器
+- `fh_loader.exe` 写入 `rawprogram` 分区
+- 存在 `patch*.xml` 时自动追加 patch 阶段
+- 解析写入工具标准输出中的百分比，更新进度、速度和已写入数据量
+- 捕获 stdout / stderr 到运行日志
+- 失败时显示退出码和错误日志，支持手动停止并终止子进程
+- UFS / eMMC 根据编程器和固件路径自动推断
+
+### 4. 分区浏览与日志
+
+- 独立分区页：搜索、类型过滤、写入状态、镜像大小
+- 支持导出 CSV，方便核对分区表
+- 运行日志页实时滚动，保留完整 QFIL 会话
+- 日志可清空、导出 UTF-8 文本
+- 右侧“实时传输”面板显示总进度、速度、已写入和剩余时间
+
+### 5. 界面与交互
+
+- 无边框自绘窗口、Per-Monitor V2 DPI
+- 三栏布局：侧栏 / 主工作区 / 实时状态栏 / 底部操作条
+- EDL 环形轨道、扫描线、数据脉冲、进度光效、完成彩带
+- 四种强调色、动效开关、堆叠 Toast
+- 标题栏、侧栏、窗口图标和 exe 资源图标统一使用 `logo.ico`
+- 拖拽固件目录到窗口即可载入
+
+### 6. GitHub 更新通道
+
+- 设置页直接检查 GitHub Releases
+- 读取 latest release tag，与当前 `1.0.1` 比较
+- 显示“已是最新”“发现新版本”“检查失败”
+- 有新版时打开发行包下载地址
+- 仓库：<https://github.com/yriver1314/Yuki9008Tool>
+
+## 使用流程
+
+1. 安装并连接高通 9008 驱动，让设备在设备管理器中显示为 `QDLoader 9008 (COMx)`
+2. 打开工具，点击“扫描 9008 设备”
+3. 选择或拖入固件目录（包含 `rawprogram*.xml` 和 `prog_firehose*`）
+4. 在“固件管理”页确认编程器、分区数量和总大小
+5. 确认右侧写入引擎为 `QFIL READY`
+6. 点击“开始刷写”，保持 USB 连接直到显示完成
+7. 完成后手动重启设备；重新进入 9008 后可再次刷写
+
+## 发行包内容
+
+GitHub Release 的 Windows 包包含：
+
+```text
+Yuki9008Tool.exe
+logo.ico
+libwinpthread-1.dll
+README.md
+preview.png
+bin\                 # QFIL 命令行组件
+Driver\              # Qualcomm QDLoader USB 驱动安装包
+```
+
+`bin` 和 `Driver` 会随 `build.bat` 一起复制到 `dist\`，并打包进 Release。
+源码仓库不提交这些第三方二进制，只在发行包中提供。
+
+## bin / QFIL 实测结果
+
+当前 `bin` 目录包含：
 
 ```text
 QSaharaServer.exe
-fh_loader.exe
+QDmssLoader.exe
+QC.QMSLPhone.dll
+QMSL_MSVC10R.dll
+QualCtrl.dll
+SwDownloadDLL.dll
 ```
 
-程序会自动在以下位置查找：
+实测结果：
 
-- 当前 exe 目录
-- `C:\Program Files (x86)\Qualcomm\QPST\bin`
-- `C:\Program Files\Qualcomm\QPST\bin`
-- `C:\Program Files (x86)\Qualcomm\QFIL`
-- `C:\Program Files\Qualcomm\QFIL`
-- `PATH` 中的目录
+| 组件 | 结果 |
+| --- | --- |
+| `QSaharaServer.exe` | **可用**：能启动并打印完整帮助，退出码 0；支持 `-p \\.\COMn` 和 `-u <port>` |
+| `fh_loader.exe` | **缺失**：当前 bin 中没有，无法完成分区写入 |
+| `QDmssLoader.exe` | **不可用**：启动返回 `0xC0000135`，缺少 32 位 `MSVCP100.dll` / `MSVCR100.dll` |
+| `Driver\*Setup.exe` | **签名有效**：Qualcomm 官方签名，未在本机安装测试 |
 
-如果安装在自定义位置，可设置环境变量：
+结论：**当前 bin 不是完整的 QFIL 写入环境**。它可以完成 Sahara 编程器发送，
+但缺少 `fh_loader.exe`，所以本工具会显示 `ENGINE INCOMPLETE`，并禁用“开始刷写”。
+要完成真实写入，请把完整 QFIL / QPST 中的 `fh_loader.exe` 放进 `bin\`，或安装
+QFIL / QPST 后通过 `YUKI9008_ENGINE_DIR` 指向其 `bin` 目录。
 
-```bat
-set YUKI9008_ENGINE_DIR=D:\Qualcomm\QPST\bin
-Yuki9008Tool.exe
-```
+## 写入引擎检测顺序
 
-设备需要以 QDLoader 9008 模式连接，并在设备管理器中显示为 `COMx`。
-如果只显示 USB 设备而没有 COM 端口，工具会拒绝启动写入。
+工具按以下顺序查找 `QSaharaServer.exe` 与 `fh_loader.exe`：
+
+1. `YUKI9008_ENGINE_DIR` 环境变量
+2. 当前 exe 目录
+3. exe 目录下的 `bin\`
+4. exe 目录下的 `QFIL\`
+5. `C:\Program Files (x86)\Qualcomm\QPST\bin`
+6. `C:\Program Files\Qualcomm\QPST\bin`
+7. `C:\Program Files (x86)\Qualcomm\QFIL`
+8. `C:\Program Files\Qualcomm\QFIL`
+9. `PATH` 中的目录
+
+只有两个程序都找到，右侧才显示 `QFIL READY`。
 
 ## 快速开始
 
-解压发行包后直接运行：
+解压发行包后运行：
 
 ```text
 Yuki9008Tool.exe
 ```
 
-`Yuki9008Tool.exe` 需要与 `logo.ico`、`libwinpthread-1.dll` 放在同一目录。
-源码构建的输出位于 `dist\`。
+`Yuki9008Tool.exe` 需要与 `logo.ico`、`libwinpthread-1.dll` 位于同一目录。
+源码构建输出在 `dist\`。
 
-### 构建（MinGW-w64）
+## 构建
 
 ```bat
 build.bat
 ```
 
-或手动执行：
+手动命令：
 
 ```bat
 windres --codepage=65001 version.rc -O coff -o version.res
@@ -96,9 +172,9 @@ g++ main.cpp app_state.cpp paint.cpp paint_foreground.cpp paint_cards.cpp paint_
   -static-libgcc -static-libstdc++
 ```
 
-- 开发环境：MinGW-w64 GCC 15.2（CLion 自带工具链）
-- 不需要 Qt / .NET；仅使用 Windows 自带库：GDI+、DWM、SetupAPI、BCrypt、Shell
-- `libwinpthread-1.dll` 随发行目录提供
+- MinGW-w64 GCC 15.2
+- 不依赖 Qt / .NET，只使用 Windows 自带库
+- `libwinpthread-1.dll` 随发行包提供
 
 ## 快捷键
 
@@ -108,77 +184,63 @@ g++ main.cpp app_state.cpp paint.cpp paint_foreground.cpp paint_cards.cpp paint_
 | `F5` | 重新扫描 9008 设备 |
 | `Ctrl + L` | 打开运行日志 |
 
-## GitHub 软件更新
-
-设置页内置 GitHub Releases 更新检查：
-
-- 读取 `https://api.github.com/repos/yriver1314/Yuki9008Tool/releases/latest`
-- 比较 Release tag 与当前版本号
-- 有新版时显示版本号和“前往下载”
-- 下载按钮优先打开 Release 中的 `Yuki9008Tool.exe` 资源，没有资源时回退到 Release 页面
-
-更新仓库必须是 **public**，并至少发布一个 GitHub Release。发布资源建议命名为：
+## 真实写入命令
 
 ```text
-Yuki9008Tool.exe
+QSaharaServer.exe -u <COM号> -s 13:"<prog_firehose...>"
+fh_loader.exe --port=\\.\COMn --sendxml="rawprogram0.xml" --search_path="<固件目录>" --memoryname=ufs|emmc --noprompt --showpercentagecomplete --zlpawarehost=1
 ```
 
-检查更新不会静默替换正在运行的 exe：下载完成后关闭旧版本，再运行新版本即可。
-如果在 fork 上测试更新，可临时指定仓库：
+存在 `patch*.xml` 时追加：
 
-```bat
-set YUKI9008_REPO=owner/repo
-Yuki9008Tool.exe
+```text
+fh_loader.exe --port=\\.\COMn --sendxml="patch0.xml" ...
 ```
 
-> GitHub 未认证 API 有频率限制（通常每小时 60 次），手动检查更新不受影响。
-
-## 写入流程
-
-1. `QSaharaServer.exe -u <COM号> -s 13:"<prog_firehose...>"`
-2. `fh_loader.exe --port=\\.\COMn --sendxml="rawprogram0.xml" --search_path="<固件目录>" --memoryname=ufs|emmc --noprompt --showpercentagecomplete --zlpawarehost=1`
-3. 存在 `patch*.xml` 时，再执行一次 `fh_loader --sendxml="patch0.xml"`
-4. 成功后提示设备重启；重新进入 9008 后可再次刷写
-
-> UFS / eMMC 根据固件路径与编程器文件名自动推断；若你的固件需要固定存储类型，请确认目录名或编程器中包含 `ufs` / `emmc` 标识。
+> UFS / eMMC 根据固件路径和编程器文件名推断；如固件有明确要求，请确认目录或
+> 编程器名称包含 `ufs` / `emmc`。
 
 ## 目录
 
 ```text
 .
-├── YRGui.h                  # YRGui 4.0（已扩展自定义绘制钩子、Windows 临界区投递）
-├── main.cpp                 # 程序入口、窗口子类、拖拽与快捷键
-├── app_state.h / app_state.cpp  # 状态机、设备 / 固件 / 写入引擎 / 日志
+├── YRGui.h                  # YRGui 4.0
+├── main.cpp                 # 入口、窗口子类、拖拽与快捷键
+├── app_state.h/.cpp         # 状态机、设备 / 固件 / QFIL / 更新
 ├── paint.cpp                # 基础绘制、图标、背景
 ├── paint_foreground.cpp     # 侧栏、标题区、Hero、阶段、仪表
 ├── paint_cards.cpp          # 固件、传输、选项、设备、操作栏
-├── paint_pages.cpp          # 固件 / 分区 / 日志 / 设置页与彩带
-├── logo.ico                 # 应用 / 窗口 / 文件图标
-├── version.rc               # 图标与作者等 Windows 版本资源（作者：river）
+├── paint_pages.cpp          # 固件 / 分区 / 日志 / 设置页
+├── logo.ico                 # 应用与界面 logo
+├── version.rc               # 图标、作者与版本资源
 ├── LICENSE
 ├── .gitignore
 ├── build.bat
-├── libwinpthread-1.dll
 ├── preview.png
+├── bin/                     # QFIL 命令行组件（发行包）
+├── Driver/                  # Qualcomm USB 驱动（发行包）
 └── dist/
     ├── Yuki9008Tool.exe
     ├── logo.ico
     ├── libwinpthread-1.dll
     ├── README.md
-    └── preview.png
+    ├── preview.png
+    ├── bin/
+    └── Driver/
 ```
 
 ## 设计
 
 - 深色「午夜蓝 + 电光青」视觉，强调色可切换
-- 三栏布局：232px 侧栏 / 自适应主内容 / 280px 右栏 / 底部操作条
-- 字号与间距以逻辑像素设计，随系统 DPI 缩放
+- 逻辑像素布局，随系统 DPI 缩放
 - 颜色语义：`ink / dim / accent / green / amber / red`
-- 所有动画由 30 FPS 定时器驱动，空闲时自动降频；关闭动效后保留进度反馈
+- 30 FPS 动画循环，空闲自动降频
+- 关闭动效后仍保留进度和状态反馈
 
 ## 许可
 
 - YRGui 4.0：MIT
 - Yuki9008工具 应用代码：MIT
+- `bin/` 与 `Driver/` 中的 Qualcomm 组件归其各自权利人所有，仅随发行包分发
 
-> 刷机有风险。请先确认机型、固件、分区表与供电状态，并确保 QFIL 工具版本与设备匹配。
+> 刷机有风险。请先确认机型、固件、分区表与供电状态，并确保 QFIL 组件与设备匹配。

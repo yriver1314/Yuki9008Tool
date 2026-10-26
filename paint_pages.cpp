@@ -260,7 +260,7 @@ void AppState::PaintSettingsPage(Gdiplus::Graphics& g, bool bg)
 
     Txt(g, L"关于 Yuki9008", { right.x + 26, right.y + 20, 260, 24 }, m_fonts.h2.get(),
         0xE1EEFF, 255, 0);
-    Txt(g, L"作者：river  ·  Qualcomm EDL Studio",
+    Txt(g, L"作者：yriver1314  ·  Qualcomm EDL Studio",
         { right.x + 26, right.y + 45, 380, 16 }, m_fonts.small.get(), 0x7186A2, 255, 0);
 
     // version block
@@ -277,7 +277,7 @@ void AppState::PaintSettingsPage(Gdiplus::Graphics& g, bool bg)
     g.DrawPath(&vedge, &vp);
     Txt(g, L"Yuki9008工具", { ver.x + 16, ver.y + 10, 200, 20 }, m_fonts.bodyBold.get(),
         0xEDF5FF, 255, 0);
-    Txt(g, L"v1.0.0  ·  BUILD 2026.10  ·  BY RIVER", { ver.x + 16, ver.y + 31, 300, 16 },
+    Txt(g, L"v1.0.1  ·  BUILD 2026.10  ·  BY YRIVER1314", { ver.x + 16, ver.y + 31, 300, 16 },
         m_fonts.monoS.get(), 0x8EA6C7, 255, 0);
     Txt(g, L"YRGui 4.0  ·  MIT License", { ver.x + 16, ver.y + 49, 260, 16 },
         m_fonts.tiny.get(), 0x607793, 255, 0);
@@ -343,7 +343,9 @@ void AppState::PaintSettingsPage(Gdiplus::Graphics& g, bool bg)
     g.FillEllipse(&ed, (Gdiplus::REAL)X(extra.x + 22 + colW * 2),
                   (Gdiplus::REAL)Y(extra.y + 73), std::max(1.f, SF(4.f)),
                   std::max(1.f, SF(4.f)));
-    Txt(g, m_engineReady ? L"QFIL READY  ·  FIREHOSE 2.0" : L"ENGINE NOT FOUND",
+    Txt(g, m_engineReady ? L"QFIL READY  ·  FIREHOSE 2.0"
+                         : (!m_engineSahara.empty() ? L"ENGINE INCOMPLETE  ·  FH_LOADER MISSING"
+                                                    : L"ENGINE NOT FOUND"),
         { extra.x + 32 + colW * 2, extra.y + 64, colW - 12, 16 }, m_fonts.monoS.get(),
         m_engineReady ? 0x8DD9BE : 0xF2A9B4, 255, 0);
 

@@ -92,7 +92,7 @@ void AppState::PaintChrome(Gdiplus::Graphics& g)
 
     Txt(g, L"Yuki9008", { 74, 19, 138, 22 }, m_fonts.h2.get(), col::ink, 255, 0);
     Txt(g, L"9008 TOOL  ·  FLASH STUDIO", { 75, 41, 150, 12 }, m_fonts.tiny.get(), 0x91A4BE, 255, 0);
-    Txt(g, L"v1.0.0", { 170, 24, 50, 12 }, m_fonts.tiny.get(), 0x51637C, 255, 2);
+    Txt(g, L"v1.0.1", { 170, 24, 50, 12 }, m_fonts.tiny.get(), 0x51637C, 255, 2);
 
     Hairline(g, 26, 76, 206, 76, 0x16243A, 220);
     Txt(g, L"工作区", { 28, 94, 90, 14 }, m_fonts.tiny.get(), 0x5C718F, 255, 0);
@@ -205,12 +205,15 @@ void AppState::PaintChrome(Gdiplus::Graphics& g)
             FillRound(g, { r.x + 14 + i * 8, r.y + 105 - bh, 4, bh }, statusCol, 2, (BYTE)a);
         }
         Txt(g, scanning ? L"ENUMERATING" :
-                (live ? L"USB LINK ACTIVE" : (m_engineReady ? L"ENGINE READY" : L"ENGINE NOT FOUND")),
+                (live ? L"USB LINK ACTIVE"
+                      : (m_engineReady ? L"ENGINE READY"
+                                       : (!m_engineSahara.empty() ? L"ENGINE INCOMPLETE"
+                                                                  : L"ENGINE NOT FOUND"))),
             { r.x + 56, r.y + 94, 140, 13 }, m_fonts.monoS.get(),
             live ? 0x6FAF99 : (m_engineReady ? 0x6F8FB5 : 0x7D6C52), 255, 0);
     }
 
-    Txt(g, L"BUILD 2026.10  ·  BY RIVER", { 26, l.H - 54, 190, 14 },
+    Txt(g, L"BUILD 2026.10  ·  BY YRIVER1314", { 26, l.H - 54, 190, 14 },
         m_fonts.tiny.get(), 0x4C5D73, 255, 0);
     Txt(g, L"YRGUI 4.0  ·  MIT", { 26, l.H - 36, 160, 12 }, m_fonts.tiny.get(), 0x3D4C60, 255, 0);
 }

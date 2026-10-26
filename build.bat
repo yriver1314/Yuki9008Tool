@@ -39,6 +39,8 @@ copy /Y Yuki9008Tool.exe dist\Yuki9008Tool.exe >nul
 copy /Y logo.ico dist\logo.ico >nul
 copy /Y README.md dist\README.md >nul
 if exist preview.png copy /Y preview.png dist\preview.png >nul
+if exist bin xcopy /E /I /Y bin dist\bin >nul
+if exist Driver xcopy /E /I /Y Driver dist\Driver >nul
 
 for /f "delims=" %%I in ('where g++') do (
     set "GXX=%%I"
