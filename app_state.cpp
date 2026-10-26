@@ -7,7 +7,7 @@
 //  update channel
 // ---------------------------------------------------------------------------
 static constexpr const wchar_t* kAppVersion = L"1.0.0";
-static constexpr const wchar_t* kRepoOwner = L"river";
+static constexpr const wchar_t* kRepoOwner = L"yriver1314";
 static constexpr const wchar_t* kRepoName = L"Yuki9008Tool";
 
 static std::string JsonUnescape(const std::string& s)

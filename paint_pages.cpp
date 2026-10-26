@@ -314,7 +314,7 @@ void AppState::PaintSettingsPage(Gdiplus::Graphics& g, bool bg)
                       std::max(1.f, SF(5.f)));
         Txt(g, m_updateMessage, { right.x + 38, right.y + 296, right.w - 62, 18 },
             m_fonts.small.get(), uc, 255, 0);
-        Txt(g, L"github.com/river/Yuki9008Tool", { right.x + 26, right.y + 318,
+        Txt(g, L"github.com/yriver1314/Yuki9008Tool", { right.x + 26, right.y + 318,
                                                    right.w - 52, 14 },
             m_fonts.monoS.get(), 0x4E627E, 255, 0);
     }

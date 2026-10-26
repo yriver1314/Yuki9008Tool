@@ -4,7 +4,7 @@
 > Qualcomm Emergency Download Studio · Modern dark UI · Rich motion
 >
 > 作者：**river**  
-> GitHub：<https://github.com/river/Yuki9008Tool>
+> GitHub：<https://github.com/yriver1314/Yuki9008Tool>
 
 ![Yuki9008工具 刷写中心](preview.png)
 
@@ -111,7 +111,7 @@ g++ main.cpp app_state.cpp paint.cpp paint_foreground.cpp paint_cards.cpp paint_
 
 设置页内置 GitHub Releases 更新检查：
 
-- 读取 `https://api.github.com/repos/river/Yuki9008Tool/releases/latest`
+- 读取 `https://api.github.com/repos/yriver1314/Yuki9008Tool/releases/latest`
 - 比较 Release tag 与当前版本号
 - 有新版时显示版本号和“前往下载”
 - 下载按钮优先打开 Release 中的 `Yuki9008Tool.exe` 资源，没有资源时回退到 Release 页面
