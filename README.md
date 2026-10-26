@@ -69,13 +69,14 @@ Yuki9008Tool.exe
 
 ## 快速开始
 
-直接运行：
+解压发行包后直接运行：
 
 ```text
-dist\Yuki9008Tool.exe
+Yuki9008Tool.exe
 ```
 
-发行目录需要与 `logo.ico`、`libwinpthread-1.dll` 放在一起。
+`Yuki9008Tool.exe` 需要与 `logo.ico`、`libwinpthread-1.dll` 放在同一目录。
+源码构建的输出位于 `dist\`。
 
 ### 构建（MinGW-w64）
 
