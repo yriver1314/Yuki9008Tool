@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 //  update channel
 // ---------------------------------------------------------------------------
-static constexpr const wchar_t* kAppVersion = L"1.0.2";
+static constexpr const wchar_t* kAppVersion = L"1.0.3";
 static constexpr const wchar_t* kRepoOwner = L"yriver1314";
 static constexpr const wchar_t* kRepoName = L"Yuki9008Tool";
 
@@ -600,7 +600,7 @@ void AppState::Begin()
     m_autoStart = std::getenv("YUKI9008_AUTO_START") != nullptr;
     if (const char* fw = std::getenv("YUKI9008_FIRMWARE"))
         LoadFirmwareDir(FromUtf8(fw));
-    Log(L"Yuki9008工具 内核 v1.0.2 已启动", LogLevel::Ok);
+    Log(L"Yuki9008工具 内核 v1.0.3 已启动", LogLevel::Ok);
     Log(L"加载安全策略 · 校验 / 备份 / 防误擦", LogLevel::Info);
     if (m_engineReady)
         Log(L"写入引擎已就绪 · " + m_engineDir, LogLevel::Ok);

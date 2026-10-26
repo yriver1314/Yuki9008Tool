@@ -5,7 +5,7 @@
 >
 > 作者：**yriver1314**  
 > GitHub：<https://github.com/yriver1314/Yuki9008Tool>  
-> 当前版本：**1.0.2**
+> 当前版本：**1.0.3**
 
 ![Yuki9008工具 刷写中心](preview.png)
 
@@ -69,7 +69,7 @@ Yuki9008工具 把高通 9008（QDLoader / EDL）刷机流程做成一个完整�
 ### 6. GitHub 更新通道
 
 - 设置页直接检查 GitHub Releases
-- 读取 latest release tag，与当前 `1.0.2` 比较
+- 读取 latest release tag，与当前 `1.0.3` 比较
 - 显示“已是最新”“发现新版本”“检查失败”
 - 有新版时打开发行包下载地址
 - 仓库：<https://github.com/yriver1314/Yuki9008Tool>
@@ -97,7 +97,7 @@ logo.ico
 libwinpthread-1.dll
 README.md
 preview.png
-bin\                 # QFIL 2.0.3.5 完整 GUI + 命令行组件
+bin\                 # QFIL 2.0.3.5 + QSaharaServer + fh_loader
 Driver\              # Qualcomm QDLoader USB 驱动安装包
 ```
 
@@ -111,6 +111,7 @@ Driver\              # Qualcomm QDLoader USB 驱动安装包
 ```text
 QFIL.exe                 # QFIL 2.0.3.5 图形界面
 QSaharaServer.exe
+fh_loader.exe            # Firehose 写入 CLI
 QDmssLoader.exe
 QC.QMSLPhone.dll
 QMSL_MSVC10R.dll
@@ -125,13 +126,13 @@ Credits.txt / *.url
 | --- | --- |
 | `QFIL.exe` | **可用**：QFIL 2.0.3.5 GUI 能启动并进入加载流程 |
 | `QSaharaServer.exe` | **可用**：能启动并打印完整帮助，退出码 0；支持 `-p \\.\COMn` 和 `-u <port>` |
-| `fh_loader.exe` | **缺失**：QFIL 2.0.3.5 包本身不带这个独立 CLI，无法用本工具一键写入 |
-| `QDmssLoader.exe` | **不可用**：启动返回 `0xC0000135`，缺少 32 位 `MSVCP100.dll` / `MSVCR100.dll` |
+| `fh_loader.exe` | **可用**：版本 `17.04.27.14.27`，`--port` / `--sendxml` / `--search_path` / `--memoryname` 等参数完整，帮助退出码 0 |
+| `QDmssLoader.exe` | **不可用**：启动返回 `0xC0000135`，缺少 32 位 `MSVCP100.dll` / `MSVCR100.dll`；不影响 QFIL GUI 和 fh_loader |
 | `Driver\*Setup.exe` | **签名有效**：Qualcomm 官方签名，未在本机安装测试 |
 
-结论：**QFIL 2.0.3.5 完整 GUI 已加入 bin，可手动刷写**；本工具的“开始刷写”走
-`fh_loader.exe` 命令行，因此仍需要额外补一个 `fh_loader.exe`。有 QFIL GUI 时，
-工具会显示 `QFIL GUI READY`，并在设置页提供“打开 QFIL”按钮。
+结论：**QFIL 2.0.3.5 完整 GUI + `fh_loader.exe` 已加入 bin**，工具现在可以进入
+`QFIL READY` 状态，使用 `QSaharaServer + fh_loader` 一键写入；设置页仍保留
+“打开 QFIL”作为手动刷写入口。当前环境没有 9008 设备，硬件写入未做端到端测试。
 
 ## 写入引擎检测顺序
 
